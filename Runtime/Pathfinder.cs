@@ -2,7 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Pathfinder<TGrid> : ScriptableObject
+namespace PixLi
 {
-	public abstract Vector3[] CalculatePath(Vector3 start, Vector3 end, TGrid grid);
+	public interface IPathfinder
+	{
+		Vector3[] CalculatePath(Vector3 start, Vector3 end, PolytopialSegmentsStructure polytopialSegmentsStructure);
+	}
+
+	public abstract class Pathfinder : ScriptableObject, IPathfinder
+	{
+		public abstract Vector3[] CalculatePath(Vector3 start, Vector3 end, PolytopialSegmentsStructure polytopialSegmentsStructure);
+	}
 }

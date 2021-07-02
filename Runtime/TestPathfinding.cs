@@ -2,33 +2,49 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TestPathfinding : MonoBehaviour
+//using Debug = ?Uni
+
+namespace PixLi
 {
-	[SerializeField] private Transform _start;
-	public Transform _Start => this._start;
-
-	[SerializeField] private Transform _end;
-	public Transform _End => this._end;
-
-	private List<GameObject> _gameObjects = new List<GameObject>();
-
-	private void Update()
+	public class TestPathfinding : MonoBehaviour
 	{
-		for (int a = 0; a < this._gameObjects.Count; a++)
+		[SerializeField] private Transform _start;
+		public Transform _Start => this._start;
+
+		[SerializeField] private Transform _end;
+		public Transform _End => this._end;
+
+		private List<GameObject> _gameObjects = new List<GameObject>();
+
+		[SerializeField] private Pathfinder _pathfinder;
+		public Pathfinder _Pathfinder => this._pathfinder;
+
+		[SerializeField] private PolytopialSegmentsStructure _polytopialSegmentsStructure;
+		public PolytopialSegmentsStructure _PolytopialSegmentsStructure => this._polytopialSegmentsStructure;
+
+		private void Update()
 		{
-			Object.Destroy(this._gameObjects[a]);
-		}
+			for (int a = 0; a < this._gameObjects.Count; a++)
+			{
+				Object.Destroy(this._gameObjects[a]);
+			}
 
-		this._gameObjects.Clear();
+			this._gameObjects.Clear();
 
-		Vector3[] path = HexGrid._Instance.CalculatePath(start: this._start.position, end: this._end.position);
+			Vector3[] path = this._pathfinder.CalculatePath(
+				start: this._start.position,
+				end: this._end.position,
+				polytopialSegmentsStructure: this._polytopialSegmentsStructure
+			);
 
-		for (int a = 0; a < path.Length; a++)
-		{
-			GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-			go.transform.position = path[a];
+			for (int a = 0; a < path.Length; a++)
+			{
+				GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+				go.transform.position = path[a];
+				go.GetComponent<MeshRenderer>().sharedMaterial = null;
 
-			this._gameObjects.Add(go);
+				this._gameObjects.Add(go);
+			}
 		}
 	}
 }
