@@ -1,11 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
-using Shapes;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+#if SHAPES_URP || SHAPES_HDRP
+using Shapes;
+#endif
+
 namespace PixLi
 {
+#if SHAPES_URP || SHAPES_HDRP
 	public class PathfinderVisualizer : ImmediateModeShapeDrawer
 	{
 		private Data[] _data;
@@ -54,7 +58,7 @@ namespace PixLi
 			{
 				Draw.ZOffsetUnits = this._zOffsetUnits;
 				Draw.ZTest = this._zTest;
-				Draw.RectangleThicknessSpace = ThicknessSpace.Meters;
+				Draw.ThicknessSpace = ThicknessSpace.Meters;
 				Draw.TextAlign = this._textAlign;
 
 				if (this._data != null)
@@ -118,4 +122,5 @@ namespace PixLi
 			public float Heuristic { get; set; }
 		}
 	}
+#endif
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Shapes;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -258,14 +257,18 @@ namespace PixLi
 			return 14 * x + 10 * (z - x);
 		}
 
+#if SHAPES_URP || SHAPES_HDRP
 		[SerializeField] private PathfinderVisualizer _pathfinderVisualizer;
+#endif
 
 		[SerializeField] private ExperimentalSegmentCostRelation _experimentalSegmentCostRelation;
 
 		//TODO: A* doesn't necessary needs to work with segments. Make it more modular.
 		public override Vector3[] CalculatePath(Vector3 start, Vector3 end, PolytopialSegmentsStructure polytopialSegmentsStructure)
 		{
+#if SHAPES_URP || SHAPES_HDRP
 			this._pathfinderVisualizer = polytopialSegmentsStructure.PathfinderVisualizer;
+#endif
 			this._experimentalSegmentCostRelation.Initialize(polytopialSegmentsStructure);
 
 			Segment startSegment = polytopialSegmentsStructure.GetSegment(position: start);
@@ -294,7 +297,9 @@ namespace PixLi
 				[startSegment.Id] = 0.0f
 			};
 
+#if SHAPES_URP || SHAPES_HDRP
 			List<PathfinderVisualizer.Data> visualizerData = new List<PathfinderVisualizer.Data>(64);
+#endif
 
 			Segment current;
 
@@ -349,7 +354,9 @@ namespace PixLi
 						//? If cost was lower we are reasigning the backtracking node to improve path and making neighbour segment match this new lower cost.
 						backtracking[next.Id] = current;
 
+#if SHAPES_URP || SHAPES_HDRP
 						visualizerData.Add(new PathfinderVisualizer.Data(next.WorldPosition, Quaternion.identity, newCost, this.Heuristic(a: endSegment, b: next)));
+#endif
 					}
 				}
 			}
@@ -378,7 +385,9 @@ namespace PixLi
 			//	Debug.Log($"path {a}: {path[a]}");
 			//}
 
+#if SHAPES_URP || SHAPES_HDRP
 			this._pathfinderVisualizer.Visualize(data: visualizerData.ToArray());
+#endif
 
 			return path.ToArray();
 		}
