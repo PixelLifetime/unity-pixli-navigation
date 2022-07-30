@@ -12,6 +12,23 @@ namespace PixLi
 #if SHAPES_URP || SHAPES_HDRP
 	public class PathfinderVisualizer : ImmediateModeShapeDrawer
 	{
+		public struct Data
+		{
+			public Data(Vector3 position, Quaternion rotation, float distance, float heuristic) : this()
+			{
+				this.Position = position;
+				this.Rotation = rotation;
+				this.Distance = distance;
+				this.Heuristic = heuristic;
+			}
+
+			public Vector3 Position { get; set; }
+			public Quaternion Rotation { get; set; }
+
+			public float Distance { get; set; }
+			public float Heuristic { get; set; }
+		}
+
 		private Data[] _data;
 
 		public void Visualize(Data[] data)
@@ -19,9 +36,9 @@ namespace PixLi
 			this._data = data;
 		}
 
-		[SerializeField] private Color _distanceColor;
-		[SerializeField] private Color _heuristicColor;
-		[SerializeField] private Color _finalColor;
+		//[SerializeField] private Color _distanceColor;
+		//[SerializeField] private Color _heuristicColor;
+		//[SerializeField] private Color _finalColor;
 
 		[SerializeField] private int _zOffsetUnits;
 		public int _ZOffsetUnits => this._zOffsetUnits;
@@ -103,23 +120,6 @@ namespace PixLi
 					}
 				}
 			}
-		}
-
-		public struct Data
-		{
-			public Data(Vector3 position, Quaternion rotation, float distance, float heuristic) : this()
-			{
-				this.Position = position;
-				this.Rotation = rotation;
-				this.Distance = distance;
-				this.Heuristic = heuristic;
-			}
-
-			public Vector3 Position { get; set; }
-			public Quaternion Rotation { get; set; }
-
-			public float Distance { get; set; }
-			public float Heuristic { get; set; }
 		}
 	}
 #endif

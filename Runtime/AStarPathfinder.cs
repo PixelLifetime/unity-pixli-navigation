@@ -13,272 +13,64 @@ namespace PixLi
 	[CreateAssetMenu(fileName = "[AStar Pathfinder]", menuName = "[Pathfinding]/[AStar Pathfinder]")]
 	public class AStarPathfinder : Pathfinder
 	{
-		public interface IPriorityQueue<T>
-		{
-			int _Capacity { get; }
-
-			int Count_ { get; }
-
-			void Enqueue(T item, float priority, float heuristic);
-			T Dequeue();
-
-			void Update(T item, float priority);
-			bool Contains(T item);
-		}
-
-		//public class ListPriorityQueue<T> : IPriorityQueue<T>
-		//	where T : class
-		//{
-		//	private List<Data> _items = new List<Data>(256);
-
-		//	public int _Capacity => this._items.Capacity;
-
-		//	public int Count_ => this._items.Count;
-
-		//	public void Enqueue(T item, float priority)
-		//	{
-		//		this._items.Add(new Data(item, priority));
-
-		//		this._items.Sort((a, b) => a.Priority < b.Priority ? -1 : 1);
-		//	}
-
-		//	public T Dequeue()
-		//	{
-		//		T item = this._items[0].Item;
-
-		//		this._items.RemoveAt(0);
-
-		//		return item;
-		//	}
-
-		//	public void Update(T item, float priority)
-		//	{
-		//		int index = this._items.FindIndex(data => data.Item == item);
-		//		this._items[index] = new Data(this._items[index].Item, priority);
-
-		//		this._items.Sort((a, b) => a.Priority < b.Priority ? -1 : 1);
-		//	}
-
-		//	public bool Contains(T item) => this._items.FindIndex(data => data.Item == item) > 0;
-
-		//	public struct Data
-		//	{
-		//		public T Item { get; set; }
-		//		public float Priority { get; set; }
-
-		//		public Data(T item, float priority) : this()
-		//		{
-		//			this.Item = item;
-		//			this.Priority = priority;
-		//		}
-		//	}
-		//}
-
-		public class PriorityQueue<T> : IPriorityQueue<T>
-			where T : class, PriorityQueue<T>.IItem
-		{
-			private float[] _heuristics;
-			private float[] _priorities;
-			private T[] _items;
-			public int _Capacity => this._items.Length;
-
-			public int Count_ { get; private set; }
-
-			private void Swap(T a, T b)
-			{
-				////? DBUG
-				//float aPriority = this._priorities[a.Index];
-				//float bPriority = this._priorities[b.Index];
-
-				int aIndex = a.Index;
-				a.Index = b.Index;
-				b.Index = aIndex;
-
-				this._items[a.Index] = a;
-				this._items[b.Index] = b;
-
-				//this._priorities[a.Index] = aPriority;
-				//this._priorities[b.Index] = bPriority;
-
-				float aPriority = this._priorities[b.Index];
-				this._priorities[b.Index] = this._priorities[a.Index];
-				this._priorities[a.Index] = aPriority;
-
-				float aHeuristic = this._heuristics[b.Index];
-				this._heuristics[b.Index] = this._heuristics[a.Index];
-				this._heuristics[a.Index] = aHeuristic;
-			}
-
-			private void SortUp(T item)
-			{
-				int parentItemIndex = (item.Index - 1) / 2;
-
-				while (true)
-				{
-					T parentItem = this._items[parentItemIndex];
-
-					int priorityComparisonResult = this._priorities[item.Index].CompareTo(this._priorities[parentItem.Index]);
-
-					if (priorityComparisonResult < 0 || (priorityComparisonResult == 0 && this._heuristics[item.Index] < this._heuristics[parentItem.Index]))
-						this.Swap(a: item, b: parentItem);
-					else
-						break;
-
-					parentItemIndex = (item.Index - 1) / 2;
-				}
-			}
-
-			public void Enqueue(T item, float priority, float heuristic)
-			{
-				item.Index = this.Count_;
-				this._items[item.Index] = item;
-				this._priorities[item.Index] = priority;
-				this._heuristics[item.Index] = heuristic;
-
-				this.SortUp(item: item);
-
-				++this.Count_;
-			}
-
-			public void SortDown(T item)
-			{
-				while (true)
-				{
-					int leftChildIndex = item.Index * 2 + 1;
-					int rightChildIndex = item.Index * 2 + 2;
-
-					int swapIndex = 0;
-
-					if (leftChildIndex < this.Count_)
-					{
-						swapIndex = leftChildIndex;
-
-						int priorityComparisonResult = this._priorities[leftChildIndex].CompareTo(this._priorities[rightChildIndex]);
-
-						if (rightChildIndex < this.Count_)
-						{
-							if (priorityComparisonResult > 0 || (priorityComparisonResult == 0 && this._heuristics[leftChildIndex] > this._heuristics[rightChildIndex]))
-							{
-								swapIndex = rightChildIndex;
-							}
-						}
-
-						priorityComparisonResult = this._priorities[item.Index].CompareTo(this._priorities[swapIndex]);
-
-						if (priorityComparisonResult > 0 || (priorityComparisonResult == 0 && this._heuristics[item.Index] > this._heuristics[swapIndex]))
-							this.Swap(a: item, b: this._items[swapIndex]);
-						else
-							return;
-					}
-					else
-						return;
-				}
-			}
-
-			public T Dequeue()
-			{
-				T topItem = this._items[0];
-				this._items[0] = null;
-
-				--this.Count_;
-
-				if (this.Count_ > 0)
-				{
-					// Put last item in the top place.
-					this._items[0] = this._items[this.Count_];
-					this._items[0].Index = 0;
-
-					this._priorities[0] = this._priorities[this.Count_];
-					this._heuristics[0] = this._heuristics[this.Count_];
-
-					this.SortDown(this._items[0]);
-				}
-
-				return topItem;
-			}
-
-			//? Doesn't really update. We only have a scenario of sort up in pathfinding.
-			public void Update(T item, float priority)
-			{
-				this._priorities[item.Index] = priority;
-
-				this.SortUp(item: item);
-			}
-
-			public bool Contains(T item) => object.Equals(this._items[item.Index], item);
-
-			public PriorityQueue(int capacity)
-			{
-				this._items = new T[capacity];
-				this._priorities = new float[this._items.Length];
-				this._heuristics = new float[this._items.Length];
-			}
-
-			public interface IItem
-			{
-				int Index { get; set; }
-			}
-
-			//public struct Data
-			//{
-			//	T Item { get; set; }
-			//	float Priority { get; set; }
-			//}
-		}
-
 		//? One important thing to remember that heuristic should always be bigger than your max segment cost. So if you max cost of segment is 100, then you need to multiply heuristic by 100 to make it work. Otherwise it will 
 		//TODO: Make heuristic and other calculations, that affect speed and optimization, modular.
 		private float Heuristic(Segment a, Segment b)
 		{
-			// Manheaten distance.
+			//// Manheaten distance.
 			//float x = Mathf.Abs(a.WorldPosition.x - b.WorldPosition.x);
 			//float z = Mathf.Abs(a.WorldPosition.z - b.WorldPosition.z);
 
 			//return x + z;
 
-			// Diagonal stuff.
-			float x = Mathf.Abs(a.WorldPosition.x - b.WorldPosition.x);
-			float z = Mathf.Abs(a.WorldPosition.z - b.WorldPosition.z);
+			//// Diagonal stuff.
+			//float x = Mathf.Abs(a.WorldPosition.x - b.WorldPosition.x);
+			//float z = Mathf.Abs(a.WorldPosition.z - b.WorldPosition.z);
 
-			if (x > z)
-				return 14 * z + 10 * (x - z);
+			//if (x > z)
+			//	return 14 * z + 10 * (x - z);
 
-			return 14 * x + 10 * (z - x);
+			//return 14 * x + 10 * (z - x);
+
+			//return Mathf.Abs(((GridSegment)a).X - ((GridSegment)b).X) + Mathf.Abs(((GridSegment)a).Z - ((GridSegment)b).Z);
+
+			return 0.0f;
 		}
 
 		private float Distance(Segment a, Segment b)
 		{
-			float x = Mathf.Abs(a.WorldPosition.x - b.WorldPosition.x);
-			float z = Mathf.Abs(a.WorldPosition.z - b.WorldPosition.z);
+			//float x = Mathf.Abs(a.WorldPosition.x - b.WorldPosition.x);
+			//float z = Mathf.Abs(a.WorldPosition.z - b.WorldPosition.z);
 
-			if (x > z)
-				return 14 * z + 10 * (x - z);
+			//if (x > z)
+			//	return 14 * z + 10 * (x - z);
 
-			return 14 * x + 10 * (z - x);
+			//return 14 * x + 10 * (z - x);
+
+			//return Mathf.Abs(((GridSegment)a).X - ((GridSegment)b).X) + Mathf.Abs(((GridSegment)a).Z - ((GridSegment)b).Z);
+
+			return 0.0f;
 		}
 
-#if SHAPES_URP || SHAPES_HDRP
+#if (SHAPES_URP || SHAPES_HDRP) && DEBUG_PATHFINDER
 		[SerializeField] private PathfinderVisualizer _pathfinderVisualizer;
 #endif
 
-		[SerializeField] private ExperimentalSegmentCostRelation _experimentalSegmentCostRelation;
-
 		//TODO: A* doesn't necessary needs to work with segments. Make it more modular.
-		public override Vector3[] CalculatePath(Vector3 start, Vector3 end, PolytopialSegmentsStructure polytopialSegmentsStructure)
+		public Vector3[] CalculatePath(Segment startSegment, Segment endSegment, PolytopialSegmentsStructure polytopialSegmentsStructure, out float cost, float maxCost)
 		{
-#if SHAPES_URP || SHAPES_HDRP
+#if (SHAPES_URP || SHAPES_HDRP) && DEBUG_PATHFINDER
 			this._pathfinderVisualizer = polytopialSegmentsStructure.PathfinderVisualizer;
 #endif
-			this._experimentalSegmentCostRelation.Initialize(polytopialSegmentsStructure);
 
-			Segment startSegment = polytopialSegmentsStructure.GetSegment(position: start);
-			//Debug.Log("startSegment: " + startSegment);
-
-			Segment endSegment = polytopialSegmentsStructure.GetSegment(position: end);
-			//Debug.Log("endSegment: " + endSegment);
+			//Debug.Log("startSegment: " + startSegment.LocalPosition);
+			//Debug.Log("endSegment: " + endSegment.LocalPosition);
 
 			if (startSegment == null)
+			{
+				cost = 0;
 				return new Vector3[0];
+			}
 
 			//TODO: Maybe not create these each function call? HUH?!
 			PriorityQueue<Segment> frontier = new PriorityQueue<Segment>(
@@ -292,12 +84,17 @@ namespace PixLi
 				[startSegment.Id] = startSegment
 			};
 
-			Dictionary<int, float> cost = new Dictionary<int, float>(frontier._Capacity)
+			//Dictionary<int, int> segmentsCost = new Dictionary<int, int>(frontier._Capacity)
+			//{
+			//	[startSegment.Id] = 0
+			//};
+
+			Dictionary<int, float> costMemoization = new Dictionary<int, float>(frontier._Capacity)
 			{
 				[startSegment.Id] = 0.0f
 			};
 
-#if SHAPES_URP || SHAPES_HDRP
+#if (SHAPES_URP || SHAPES_HDRP) && DEBUG_PATHFINDER
 			List<PathfinderVisualizer.Data> visualizerData = new List<PathfinderVisualizer.Data>(64);
 #endif
 
@@ -318,26 +115,31 @@ namespace PixLi
 				{
 					Segment next = neighbourSegments[a];
 
+					//? You would add weight/movement cost of neighbour tile, like mud, water, grass, sand, road etc...
+					//float newCost = cost[current.Id];
+
+					//int newSegmentsCost = segmentsCost[current.Id] + polytopialSegmentsStructure._SegmentCostMap.GetCost(next);
+					float newCost = costMemoization[current.Id] + polytopialSegmentsStructure._SegmentCostMap.GetCost(next) + this.Distance(current, next);
+
 					//!? This check is questionable, need profiling and benchmarks.
 					if (next.Id == endSegment.Id)
 					{
+						costMemoization[next.Id] = newCost;
 						backtracking[next.Id] = current;
 						goto BacktrackingProcess;
 					}
 
-					//? You would add weight/movement cost of neighbour tile, like mud, water, grass, sand, road etc...
-					//float newCost = cost[current.Id];
-
-					float newCost = cost[current.Id] + this.Distance(current, next) + this._experimentalSegmentCostRelation.GetCost(next);
+					if (next.GetMemoizationValue())
+						continue;
 
 					//Debug.Log($"Current: {current};\nCurrent cost: {cost[current.Id]};\nNeighbour: {next};\nNew cost to neighbour segment: {newCost};\nHeuristic: {this.Heuristic(a: endSegment, b: next)};");
 
-					if (!cost.ContainsKey(next.Id) || newCost < cost[next.Id]) //!? #1
+					if (!costMemoization.ContainsKey(next.Id) || newCost < costMemoization[next.Id]) //!? #1
 					{
 						//if (cost.ContainsKey(next.Id))
 						//	Debug.LogError($"Neighbour: {next}, Old cost: {cost[next.Id]};");
 
-						cost[next.Id] = newCost;
+						costMemoization[next.Id] = newCost;
 
 						//? Heuristic adds to priority because it determines if this neighbour segment is closer to the end segment and in case cost was lowered it should be checked before other segments that have higher cost.
 						//? The lower the priority is the better chances for this segment. Because we have `#1` check it's either when (segment hasn't ever been visited) or (cost is lower now, so we update its priority).
@@ -354,7 +156,7 @@ namespace PixLi
 						//? If cost was lower we are reasigning the backtracking node to improve path and making neighbour segment match this new lower cost.
 						backtracking[next.Id] = current;
 
-#if SHAPES_URP || SHAPES_HDRP
+#if (SHAPES_URP || SHAPES_HDRP) && DEBUG_PATHFINDER
 						visualizerData.Add(new PathfinderVisualizer.Data(next.WorldPosition, Quaternion.identity, newCost, this.Heuristic(a: endSegment, b: next)));
 #endif
 					}
@@ -363,20 +165,32 @@ namespace PixLi
 			BacktrackingProcess:
 
 			////? Don't take into path the last node. Start and last can be returned separately, this improves time in certain cituations if last segment is hard to reach. But optimization is questionable, needs benchmarking.
-			//if (!backtracking.TryGetValue(endSegment.Id, out current))
-			//	return new Vector3[0];
+			if (!backtracking.ContainsKey(endSegment.Id))
+			{
+				cost = 0;
+				return new Vector3[0];
+			}
 
 			current = endSegment;
+
+			cost = costMemoization[current.Id];
 
 			List<Vector3> path = new List<Vector3>(frontier._Capacity);
 
 			while (current.Id != startSegment.Id)
 			{
-				path.Add(current.WorldPosition);
+				if (costMemoization[current.Id] - Mathf.Epsilon < maxCost)
+					path.Add(current.WorldPosition);
 
 				if (!backtracking.TryGetValue(current.Id, out current))
+				{
+					cost = 0;
 					return new Vector3[0];
+				}
 			}
+
+			// Add start segment.
+			path.Add(current.WorldPosition);
 
 			path.Reverse();
 
@@ -385,11 +199,27 @@ namespace PixLi
 			//	Debug.Log($"path {a}: {path[a]}");
 			//}
 
-#if SHAPES_URP || SHAPES_HDRP
+#if (SHAPES_URP || SHAPES_HDRP) && DEBUG_PATHFINDER
 			this._pathfinderVisualizer.Visualize(data: visualizerData.ToArray());
 #endif
 
 			return path.ToArray();
 		}
+
+		public override Vector3[] CalculatePath(Segment startSegment, Segment endSegment, PolytopialSegmentsStructure polytopialSegmentsStructure, out float cost) => this.CalculatePath(
+			startSegment: startSegment,
+			endSegment: endSegment,
+			polytopialSegmentsStructure: polytopialSegmentsStructure,
+			out cost,
+			maxCost: float.MaxValue
+		);
+
+		public override Vector3[] CalculatePath(Segment startSegment, Segment endSegment, PolytopialSegmentsStructure polytopialSegmentsStructure, float maxCost) => this.CalculatePath(
+			startSegment: startSegment,
+			endSegment: endSegment,
+			polytopialSegmentsStructure: polytopialSegmentsStructure,
+			out float cost,
+			maxCost: maxCost
+		);
 	}
 }

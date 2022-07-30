@@ -44,6 +44,6 @@ namespace PixLi
 		[SerializeField] private AStarPathfinder _hexGridPathfinder;
 		public AStarPathfinder _HexGridPathfinder => this._hexGridPathfinder;
 
-		public Vector3[] CalculatePath(Vector3 start, Vector3 end) => this._hexGridPathfinder.CalculatePath(start: start, end: end, null);
+		public Vector3[] CalculatePath(Vector3 start, Vector3 end) => this._hexGridPathfinder.CalculatePath(start: start, end: end, null);//, maxCost: int.MaxValue);
 	}
 }

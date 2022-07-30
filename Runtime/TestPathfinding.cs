@@ -35,6 +35,7 @@ namespace PixLi
 				start: this._start.position,
 				end: this._end.position,
 				polytopialSegmentsStructure: this._polytopialSegmentsStructure
+				//maxCost: int.MaxValue
 			);
 
 			for (int a = 0; a < path.Length; a++)

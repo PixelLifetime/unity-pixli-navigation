@@ -1,0 +1,19 @@
+{
+    "name": "com.pixel-lifetime.unity-pixli-navigation",
+    "rootNamespace": "",
+    "references": [
+        "GUID:e4cd6b641a02fa442a29bacdc712b8dd",
+        "GUID:72118e193c76b4745809963808bb45ca",
+        "GUID:13a6fdc14ca9df84eb8019bc66fa9e5d",
+        "GUID:15fc0a57446b3144c949da3e2b9737a9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
